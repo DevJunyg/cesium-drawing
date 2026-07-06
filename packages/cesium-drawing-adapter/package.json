@@ -1,0 +1,43 @@
+{
+  "name": "cesium-drawing-adapter",
+  "version": "0.0.0",
+  "description": "UX adapter (label, tooltip, stamping, persisted breakpoints) for cesium-drawing",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'TODO: vitest'"
+  },
+  "peerDependencies": {
+    "cesium-drawing": "*",
+    "cesium": ">=1.100.0"
+  },
+  "dependencies": {
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "cesium-drawing": "workspace:*",
+    "@types/uuid": "^9.0.0",
+    "cesium": "^1.115.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.4.0"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}

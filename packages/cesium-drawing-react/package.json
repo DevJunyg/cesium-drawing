@@ -1,0 +1,42 @@
+{
+  "name": "cesium-drawing-react",
+  "version": "0.0.0",
+  "description": "React hooks for cesium-drawing",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'TODO: vitest'"
+  },
+  "peerDependencies": {
+    "cesium-drawing": "*",
+    "cesium": ">=1.100.0",
+    "react": ">=18.0.0"
+  },
+  "devDependencies": {
+    "cesium-drawing": "workspace:*",
+    "@types/react": "^18.2.0",
+    "cesium": "^1.115.0",
+    "react": "^18.2.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.4.0"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  }
+}

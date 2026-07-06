@@ -1,0 +1,22 @@
+{
+  "name": "@alz/cesium-drawing-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Cesium 기반 헤드리스 작도/측정 모듈 모노레포",
+  "scripts": {
+    "typecheck": "pnpm -r --filter \"./packages/*\" run typecheck",
+    "build": "pnpm -r --filter \"./packages/*\" run build",
+    "test": "pnpm -r --filter \"./packages/*\" run test",
+    "pack:core": "pnpm --filter @alz/cesium-drawing pack --pack-destination ../xitecloud-fe/vendor",
+    "pack:react": "pnpm --filter @alz/cesium-drawing-react pack --pack-destination ../xitecloud-fe/vendor",
+    "pack:adapter": "pnpm --filter @alz/cesium-drawing-adapter pack --pack-destination ../xitecloud-fe/vendor",
+    "ship": "pnpm typecheck && pnpm build && pnpm pack:core && pnpm pack:react && pnpm pack:adapter"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "packageManager": "pnpm@10.33.2",
+  "engines": {
+    "node": ">=18"
+  }
+}

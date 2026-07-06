@@ -123,7 +123,7 @@ function ensureStyles(): void {
       font-weight: 500;
     }
     .cesium-drawing-measure-label .row .value {
-      color: #00bcd4;
+      color: #a16207;
     }
     .cesium-drawing-measure-label .extra-content {
       margin-top: 6px;
@@ -149,16 +149,10 @@ const fmt = (n: number, digits = 2): string =>
     maximumFractionDigits: digits,
   });
 
-function distanceHTML(d: DistanceCompute, i18n: Required<MeasureLabelI18n>, is3D: boolean): string {
-  // 2D 모드: 수평거리 합만
-  const base =
-    `<div class="row"><strong>${i18n.totalSurface}</strong>` +
-    `<span class="value">${fmt(d.totalSurface)} ${i18n.unitMeter}</span></div>`;
-  if (!is3D) return base;
+function distanceHTML(d: DistanceCompute, i18n: Required<MeasureLabelI18n>): string {
   return (
-    base +
-    `<div class="row"><strong>${i18n.totalDirect}</strong>` +
-    `<span class="value">${fmt(d.totalDirect)} ${i18n.unitMeter}</span></div>`
+    `<div class="row"><strong>${i18n.totalSurface}</strong>` +
+    `<span class="value">${fmt(d.totalSurface)} ${i18n.unitMeter}</span></div>`
   );
 }
 
@@ -238,7 +232,7 @@ function buildHTML(
         distanceDraftFormatter(hoverToPointCompute(payload.hover), { is3D })
       );
     }
-    return distanceHTML(payload.distance, i18n, is3D);
+    return distanceHTML(payload.distance, i18n);
   }
   if (payload.area) return areaHTML(payload.area, i18n);
   if (payload.point) return pointHTML(payload.point, i18n, is3D, pointFormatter);

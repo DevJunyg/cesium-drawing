@@ -20,6 +20,7 @@ import {
   getSegmentLabels,
   removeStampedEntity,
 } from "cesium-drawing-adapter";
+import type { DrawAdapterOptions, MeasureAdapterOptions } from "cesium-drawing-adapter";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
 type ToolId = "point" | "line" | "polygon" | "m-point" | "m-distance" | "m-area";
@@ -28,10 +29,7 @@ interface Controller {
   destroy(): void;
 }
 
-interface AdapterOptions {
-  onEnd?: (entity: Entity, positions: Cartesian3[]) => void;
-  onCancel?: () => void;
-}
+type AdapterOptions = DrawAdapterOptions & MeasureAdapterOptions;
 
 const TOOL_FN: Record<ToolId, (viewer: Viewer, options: AdapterOptions) => Controller> = {
   point: drawPoint,
@@ -40,6 +38,11 @@ const TOOL_FN: Record<ToolId, (viewer: Viewer, options: AdapterOptions) => Contr
   "m-point": measurePoint,
   "m-distance": measureDistance,
   "m-area": measureArea,
+};
+
+// 도구별 추가 옵션 — 거리: 구간 라벨 없이 마지막 점에 총거리만
+const TOOL_EXTRA: Partial<Record<ToolId, AdapterOptions>> = {
+  "m-distance": { segmentLabels: false, labelI18n: { totalSurface: "거리" } },
 };
 
 const DRAW_TOOLS: { id: ToolId; label: string }[] = [
@@ -125,6 +128,7 @@ export function App() {
     }
 
     activeRef.current = TOOL_FN[id](viewer, {
+      ...TOOL_EXTRA[id],
       onEnd: (entity) => {
         entitiesRef.current.push(entity);
         activeRef.current = null;

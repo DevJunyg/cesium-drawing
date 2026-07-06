@@ -1,15 +1,15 @@
 import { ClassificationType, Color } from "cesium";
 
 // 그리기
-export const DRAW_LINE_COLOR = Color.fromCssColorString("#40E6DF");
-export const DRAW_MATERIAL_COLOR = Color.fromCssColorString("#40E6DF").withAlpha(0.3);
+export const DRAW_LINE_COLOR = Color.YELLOW;
+export const DRAW_MATERIAL_COLOR = Color.YELLOW.withAlpha(0.3);
 export const DRAW_LINE_WIDTH = 4;
 export const DRAW_POINT_FINAL_SIZE = 10;
 export const DRAW_POINT_FINAL_OUTLINE_WIDTH = 3;
 
 // 측정
-export const MEASURE_LINE_COLOR = Color.fromCssColorString("#00FFC8");
-export const MEASURE_MATERIAL_COLOR = Color.fromCssColorString("#00FFC8").withAlpha(0.05);
+export const MEASURE_LINE_COLOR = Color.YELLOW;
+export const MEASURE_MATERIAL_COLOR = Color.YELLOW.withAlpha(0.2);
 export const MEASURE_LINE_WIDTH = 4;
 export const MEASURE_POINT_COLOR = Color.WHITE;
 export const MEASURE_POINT_SIZE = 8;

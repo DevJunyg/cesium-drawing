@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "cesium-drawing": ["../../packages/cesium-drawing/src/index.ts"],
+      "cesium-drawing-react": ["../../packages/cesium-drawing-react/src/index.ts"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}

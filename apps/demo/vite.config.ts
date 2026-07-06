@@ -12,8 +12,8 @@ export default defineConfig({
     // 워크스페이스 패키지를 소스로 직접 참조 (dist 빌드 불필요)
     alias: [
       {
-        find: /^cesium-drawing-react$/,
-        replacement: src("../../packages/cesium-drawing-react/src/index.ts"),
+        find: /^cesium-drawing-adapter$/,
+        replacement: src("../../packages/cesium-drawing-adapter/src/index.ts"),
       },
       {
         find: /^cesium-drawing$/,

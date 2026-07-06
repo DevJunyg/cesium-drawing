@@ -12,7 +12,7 @@
   "dependencies": {
     "cesium": "^1.115.0",
     "cesium-drawing": "workspace:*",
-    "cesium-drawing-react": "workspace:*",
+    "cesium-drawing-adapter": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

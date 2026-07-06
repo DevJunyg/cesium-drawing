@@ -8,22 +8,51 @@ import {
   Viewer,
 } from "cesium";
 import type { Entity } from "cesium";
-import { useDrawer, useMeasure, useVertexEditor } from "cesium-drawing-react";
-import type { MeasureComputePayload, MeasureType, ShapeType } from "cesium-drawing";
+import {
+  drawPoint,
+  drawLine,
+  drawPolygon,
+  measurePoint,
+  measureDistance,
+  measureArea,
+  destroyActiveEdit,
+  getEntityLabel,
+  getSegmentLabels,
+  removeStampedEntity,
+} from "cesium-drawing-adapter";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 
-type Tool = "point" | "polyline" | "polygon" | "distance" | "area" | "edit" | null;
+type ToolId = "point" | "line" | "polygon" | "m-point" | "m-distance" | "m-area";
 
-const DRAW_SHAPE: Record<string, ShapeType> = {
-  point: "POINT",
-  polyline: "POLYLINE",
-  polygon: "POLYGON",
+interface Controller {
+  destroy(): void;
+}
+
+interface AdapterOptions {
+  onEnd?: (entity: Entity, positions: Cartesian3[]) => void;
+  onCancel?: () => void;
+}
+
+const TOOL_FN: Record<ToolId, (viewer: Viewer, options: AdapterOptions) => Controller> = {
+  point: drawPoint,
+  line: drawLine,
+  polygon: drawPolygon,
+  "m-point": measurePoint,
+  "m-distance": measureDistance,
+  "m-area": measureArea,
 };
 
-const MEASURE_TYPE: Record<string, MeasureType> = {
-  distance: "DISTANCE",
-  area: "AREA",
-};
+const DRAW_TOOLS: { id: ToolId; label: string }[] = [
+  { id: "point", label: "점" },
+  { id: "line", label: "선" },
+  { id: "polygon", label: "면" },
+];
+
+const MEASURE_TOOLS: { id: ToolId; label: string }[] = [
+  { id: "m-point", label: "좌표" },
+  { id: "m-distance", label: "거리" },
+  { id: "m-area", label: "면적" },
+];
 
 function useCesiumViewer(container: React.RefObject<HTMLDivElement>): Viewer | null {
   const [viewer, setViewer] = useState<Viewer | null>(null);
@@ -73,95 +102,54 @@ function useCesiumViewer(container: React.RefObject<HTMLDivElement>): Viewer | n
   return viewer;
 }
 
-function DrawTool(props: {
-  viewer: Viewer;
-  shape: ShapeType;
-  onDone: (entity: Entity | null) => void;
-}) {
-  const { drawer, start } = useDrawer(
-    props.viewer,
-    { shape: props.shape },
-    {
-      onFinish: ({ entity }) => props.onDone(entity),
-      onCancel: () => props.onDone(null),
-    },
-  );
-  useEffect(() => {
-    if (drawer) start();
-  }, [drawer, start]);
-  return null;
-}
-
-function MeasureTool(props: {
-  viewer: Viewer;
-  measureType: MeasureType;
-  onCompute: (payload: MeasureComputePayload) => void;
-  onDone: (entity: Entity | null) => void;
-}) {
-  const { measure, start } = useMeasure(
-    props.viewer,
-    { measureType: props.measureType },
-    {
-      onCompute: props.onCompute,
-      onFinish: ({ entity }) => props.onDone(entity),
-      onCancel: () => props.onDone(null),
-    },
-  );
-  useEffect(() => {
-    if (measure) start();
-  }, [measure, start]);
-  return null;
-}
-
-function EditTool(props: { viewer: Viewer; entity: Entity }) {
-  const { editor, enable } = useVertexEditor(props.viewer, props.entity);
-  useEffect(() => {
-    if (editor) enable();
-  }, [editor, enable]);
-  return null;
-}
-
-function formatLength(m: number): string {
-  return m >= 1000 ? `${(m / 1000).toFixed(2)} km` : `${m.toFixed(1)} m`;
-}
-
-function formatArea(m2: number): string {
-  return m2 >= 1_000_000 ? `${(m2 / 1_000_000).toFixed(3)} km²` : `${m2.toFixed(1)} m²`;
-}
-
-const DRAW_TOOLS: { id: Tool; label: string }[] = [
-  { id: "point", label: "점" },
-  { id: "polyline", label: "선" },
-  { id: "polygon", label: "면" },
-];
-
-const MEASURE_TOOLS: { id: Tool; label: string }[] = [
-  { id: "distance", label: "거리" },
-  { id: "area", label: "면적" },
-];
-
 export function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewer = useCesiumViewer(containerRef);
-  const [tool, setTool] = useState<Tool>(null);
-  const [lastEntity, setLastEntity] = useState<Entity | null>(null);
-  const [compute, setCompute] = useState<MeasureComputePayload | null>(null);
+  const [tool, setTool] = useState<ToolId | null>(null);
+  const activeRef = useRef<Controller | null>(null);
+  const entitiesRef = useRef<Entity[]>([]);
 
-  const select = (next: Tool) => {
-    setCompute(null);
-    setTool((prev) => (prev === next ? null : next));
+  const stopActive = () => {
+    activeRef.current?.destroy();
+    activeRef.current = null;
   };
 
-  const done = (entity: Entity | null) => {
-    if (entity) setLastEntity(entity);
-    setTool(null);
+  const select = (id: ToolId) => {
+    if (!viewer) return;
+    destroyActiveEdit();
+    stopActive();
+
+    if (tool === id) {
+      setTool(null);
+      return;
+    }
+
+    activeRef.current = TOOL_FN[id](viewer, {
+      onEnd: (entity) => {
+        entitiesRef.current.push(entity);
+        activeRef.current = null;
+        setTool(null);
+      },
+      onCancel: () => {
+        activeRef.current = null;
+        setTool(null);
+      },
+    });
+    setTool(id);
   };
 
   const clearAll = () => {
+    if (!viewer) return;
+    destroyActiveEdit();
+    stopActive();
+    for (const e of entitiesRef.current) {
+      getEntityLabel(e)?.label.destroy();
+      getSegmentLabels(e)?.destroy();
+      removeStampedEntity(viewer, e);
+    }
+    entitiesRef.current = [];
     setTool(null);
-    setLastEntity(null);
-    setCompute(null);
-    viewer?.entities.removeAll();
+    viewer.scene.requestRender();
   };
 
   return (
@@ -196,68 +184,13 @@ export function App() {
         </div>
 
         <div className="group">
-          <button
-            className={tool === "edit" ? "active" : ""}
-            disabled={!lastEntity}
-            onClick={() => select("edit")}
-          >
-            정점 편집
-          </button>
           <button onClick={clearAll}>전체 지우기</button>
         </div>
 
-        <p className="hint">좌클릭 점 추가 · 더블클릭 완료 · 우클릭 직전 점 취소</p>
+        <p className="hint">
+          좌클릭 점 추가 · 더블클릭 완료 · 우클릭 직전 점 취소 · 도형의 라벨을 클릭하면 편집
+        </p>
       </div>
-
-      {compute && <Readout payload={compute} />}
-
-      {viewer && tool && DRAW_SHAPE[tool] && (
-        <DrawTool key={tool} viewer={viewer} shape={DRAW_SHAPE[tool]} onDone={done} />
-      )}
-      {viewer && tool && MEASURE_TYPE[tool] && (
-        <MeasureTool
-          key={tool}
-          viewer={viewer}
-          measureType={MEASURE_TYPE[tool]}
-          onCompute={setCompute}
-          onDone={done}
-        />
-      )}
-      {viewer && tool === "edit" && lastEntity && (
-        <EditTool key="edit" viewer={viewer} entity={lastEntity} />
-      )}
-    </div>
-  );
-}
-
-function Readout({ payload }: { payload: MeasureComputePayload }) {
-  return (
-    <div className="readout">
-      {payload.measureType === "DISTANCE" && payload.distance && (
-        <>
-          <Row label="직선거리" value={formatLength(payload.distance.totalDirect)} />
-          <Row label="표면거리" value={formatLength(payload.distance.totalSurface)} />
-        </>
-      )}
-      {payload.measureType === "AREA" && payload.area && (
-        <Row label="면적" value={formatArea(payload.area.surface)} />
-      )}
-      {payload.measureType === "POINT" && payload.point && (
-        <>
-          <Row label="경도" value={payload.point.lon.toFixed(6)} />
-          <Row label="위도" value={payload.point.lat.toFixed(6)} />
-          <Row label="고도" value={`${payload.point.height.toFixed(1)} m`} />
-        </>
-      )}
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="row">
-      <span>{label}</span>
-      <strong>{value}</strong>
     </div>
   );
 }

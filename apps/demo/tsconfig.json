@@ -7,7 +7,7 @@
     "baseUrl": ".",
     "paths": {
       "cesium-drawing": ["../../packages/cesium-drawing/src/index.ts"],
-      "cesium-drawing-react": ["../../packages/cesium-drawing-react/src/index.ts"]
+      "cesium-drawing-adapter": ["../../packages/cesium-drawing-adapter/src/index.ts"]
     }
   },
   "include": ["src", "vite.config.ts"]

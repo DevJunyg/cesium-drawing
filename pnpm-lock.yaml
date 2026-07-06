@@ -20,9 +20,9 @@ importers:
       cesium-drawing:
         specifier: workspace:*
         version: link:../../packages/cesium-drawing
-      cesium-drawing-react:
+      cesium-drawing-adapter:
         specifier: workspace:*
-        version: link:../../packages/cesium-drawing-react
+        version: link:../../packages/cesium-drawing-adapter
       react:
         specifier: ^18.2.0
         version: 18.3.1
